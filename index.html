@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=0.5">
+    <title>SCP-████ - "目不可及"</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: #111;
+            color: #ccc;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            cursor: default;
+            user-select: none;
+            overflow-x: hidden;
+        }
+        
+        .scp-header {
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .scp-title {
+            color: #900;
+            font-size: 28px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        
+        .scp-class {
+            color: #fc0;
+            font-size: 18px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .scp-image {
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+            height: 200px;
+            background-color: #222;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #444;
+        }
+        
+        .scp-image-text {
+            color: #900;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 0 0 5px #f00;
+        }
+        
+        .scp-content {
+            margin: 30px 0;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .scp-section {
+            margin-bottom: 30px;
+        }
+        
+        .scp-section-title {
+            color: #900;
+            font-size: 20px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .scp-redacted {
+            background-color: #000;
+            color: #000;
+            padding: 0 5px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+        }
+        
+        .scp-redacted::selection {
+            background: transparent;
+        }
+        
+        .scp-redacted:hover::after {
+            content: attr(data-content);
+            position: absolute;
+            left: 0;
+            top: 0;
+            background-color: #111;
+            color: #ccc;
+            padding: 0 5px;
+            z-index: 10;
+            border: 1px solid #444;
+        }
+        
+        .scp-highlight {
+            color: #f00;
+            font-weight: bold;
+            text-shadow: 0 0 3px #000;
+        }
+        
+        .scp-warning {
+            color: #f00;
+            font-weight: bold;
+            text-align: center;
+            margin: 30px 0;
+            font-size: 18px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+        
+        .jumpscare-text {
+            position: fixed;
+            color: #f00;
+            font-size: 40px;
+            font-weight: bold;
+            text-shadow: 0 0 5px #000, 0 0 10px #f00;
+            z-index: 1000;
+            pointer-events: none;
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.5) rotate(0deg);
+            animation: jumpscareAppear 0.1s forwards, jumpscareShake 0.05s infinite;
+            font-style: italic;
+        }
+        
+        @keyframes jumpscareAppear {
+            to { 
+                opacity: 1; 
+                transform: translate(-50%, -50%) scale(1) rotate(var(--rotation));
+            }
+        }
+        
+        @keyframes jumpscareShake {
+            0%, 100% { transform: translate(-50%, -50%) scale(1) rotate(calc(var(--rotation) - 2deg)); }
+            50% { transform: translate(-50%, -50%) scale(1) rotate(calc(var(--rotation) + 2deg)); }
+        }
+        
+        .blood-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="5" stitchTiles="stitch"/><feColorMatrix type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0.5 0"/></filter><rect width="100%" height="100%" filter="url(%23noise)" opacity="0.3"/></svg>'), 
+                              linear-gradient(rgba(150, 0, 0, 0.1), rgba(150, 0, 0, 0.3));
+            z-index: 999;
+            pointer-events: none;
+            display: none;
+            mix-blend-mode: multiply;
+        }
+        
+        .final-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #000;
+            background-color: #f00;
+            font-size: 48px;
+            font-weight: bold;
+            padding: 30px 60px;
+            z-index: 1001;
+            display: none;
+            text-align: center;
+            box-shadow: 0 0 50px #f00;
+            border: 5px solid #900;
+            text-transform: uppercase;
+            animation: finalPulse 0.5s infinite alternate;
+        }
+        
+        @keyframes finalPulse {
+            from { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 50px #f00; }
+            to { transform: translate(-50%, -50%) scale(1.1); box-shadow: 0 0 80px #f00; }
+        }
+        
+        .scp-footer {
+            border-top: 1px solid #444;
+            padding-top: 10px;
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+        }
+        
+        .scp-caution {
+            color: #fc0;
+            border: 1px solid #fc0;
+            padding: 10px;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .o5-restricted {
+            border: 2px solid #900;
+            padding: 15px;
+            margin: 30px 0;
+            background-color: #1a1a1a;
+            position: relative;
+        }
+        
+        .o5-title {
+            color: #900;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .replacement-effect {
+            position: absolute;
+            color: #f00;
+            font-weight: bold;
+            z-index: 100;
+            animation: fadeInOut 1s forwards;
+        }
+        
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: scale(0.5); }
+            20% { opacity: 1; transform: scale(1.2); }
+            80% { opacity: 1; transform: scale(1.2); }
+            100% { opacity: 0; transform: scale(1.5); }
+        }
+        
+        .blood-text {
+            color: #f00;
+            text-shadow: 0 0 3px #000;
+            position: relative;
+        }
+        
+        .blood-text::after {
+            content: "";
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #f00, transparent);
+            opacity: 0.7;
+        }
+        
+        .first-replacement {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .strikethrough {
+            text-decoration: line-through;
+            color: #666;
+            display: inline-block;
+        }
+        
+        .reveal-text {
+            position: absolute;
+            left: 0;
+            top: 0;
+            color: #f00;
+            font-weight: bold;
+            width: 0;
+            overflow: hidden;
+            white-space: nowrap;
+            display: inline-block;
+            vertical-align: top;
+        }
+        
+        .replaced {
+            color: #f00;
+            font-weight: bold;
+            text-shadow: 0 0 3px #000;
+            position: relative;
+        }
+
+        .replaced::after {
+            content: "";
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #f00, transparent);
+            opacity: 0.7;
+        }
+        
+        .hover-replace {
+            position: relative;
+        }
+        
+        .hover-replace-content {
+            display: none;
+            position: absolute;
+            left: 0;
+            top: 0;
+            background-color: #111;
+            color: #ccc;
+            padding: 0 5px;
+            z-index: 10;
+            border: 1px solid #444;
+        }
+        
+        .scp-redacted:hover .hover-replace-content {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="scp-header">
+        <div class="scp-title">SCP-████</div>
+        <div class="scp-class">项目等级: <span class="scp-highlight blood-text">Keter</span></div>
+    </div>
+    
+    <div class="scp-image">
+        <div class="scp-image-text">[数据删除]</div>
+    </div>
+    
+    <div class="scp-warning">
+        警告: 以下文档具有认知危害特性<br>
+        4级安保权限以下人员请立即关闭此文档
+    </div>
+    
+    <div class="scp-caution">
+        注意：以下内容每个字都请斟酌后察看<br>
+        不当阅读可能导致认知污染扩散
+    </div>
+    
+    <div class="scp-content">
+        <div class="scp-section">
+            <div class="scp-section-title">特殊收容措施</div>
+            <p>SCP-████应被收容于一个标准人形收容室内，室内墙壁需覆盖铅板和法拉第笼以阻隔其影响。任何与SCP-████的直接视觉接触都必须通过闭路监控系统进行，且观看时间不得超过<span class="scp-redacted hover-replace" data-content="30"><span class="hover-replace-content">30</span>██</span>秒。</p>
+            
+            <p>所有与SCP-████接触过的人员必须立即接受A级记忆删除，并隔离观察<span class="scp-redacted hover-replace" data-content="14"><span class="hover-replace-content">14</span>██</span>天。若出现任何异常行为，如反复提及"<span class="scp-highlight blood-text">视觉</span>"、"<span class="scp-highlight blood-text">观察</span>"或"<span class="scp-highlight blood-text">看见</span>"等词汇，应立即处决。</p>
+        </div>
+        
+        <div class="scp-section">
+            <div class="scp-section-title">描述</div>
+            <p>SCP-████是一个外表为<span class="scp-redacted hover-replace" data-content="亚洲男性，约35岁，面部特征██████"><span class="hover-replace-content">亚洲男性，约35岁，面部特征██████</span>█████</span>的人形实体，其最显著的特征是能够通过任何反射表面或记录媒介传播其认知危害效应。当个体通过任何方式"<span class="scp-highlight blood-text">看见</span>"SCP-████时，SCP-████也会"<span class="scp-highlight blood-text">看见</span>"该个体。</p>
+            
+            <p>随着暴露时间的增加，受影响者会逐渐在其视野中看到文字信息"<span class="scp-highlight blood-text">我看见你了</span>"，最初这些信息会随机替换视野中的某些词汇，随着时间推移，替换频率会逐渐增加，直到受试者的整个视觉感知完全被"<span class="scp-highlight blood-text">我看见你了</span>"占据。</p>
+            
+            <p>在实验<span class="scp-redacted hover-replace" data-content="173，涉及12名D级人员"><span class="hover-replace-content">173，涉及12名D级人员</span>███</span>中，D级人员<span class="scp-redacted hover-replace" data-content="D-9341，男性，28岁"><span class="hover-replace-content">D-9341，男性，28岁</span>████</span>在暴露<span class="scp-redacted hover-replace" data-content="5"><span class="hover-replace-content">5</span>█</span>分钟后开始尖叫，声称"<span class="scp-highlight blood-text">它到处都是！</span>"。随后的尸检发现其视网膜上出现微小的刻痕，组成了"<span class="scp-highlight blood-text">我看见你了</span>"的字样。</p>
+        </div>
+        
+        <div class="scp-section">
+            <div class="scp-section-title">附录████-1</div>
+            <p>以下是对SCP-████影响过程的记录，由自动记录系统完成，无人员直接观察:</p>
+            
+            <p>"初始接触后<span class="scp-redacted hover-replace" data-content="2"><span class="hover-replace-content">2</span>█</span>分钟: 测试对象开始频繁眨眼，报告称阅读材料中出现错别字。"</p>
+            
+            <p>"接触后<span class="scp-redacted hover-replace" data-content="5"><span class="hover-replace-content">5</span>█</span>分钟: 对象变得焦躁，声称文档中的某些词变成了'<span class="scp-highlight blood-text">我看见你了</span>'。监控确认文档内容未改变。"</p>
+            
+            <p>"接触后<span class="scp-redacted hover-replace" data-content="12"><span class="hover-replace-content">12</span>██</span>分钟: 对象开始尖叫，用手抓挠眼睛。安保人员介入时，对象反复大喊'<span class="scp-highlight blood-text">它看见我了！它看见我了！</span>'。"</p>
+            
+            <p>"接触终止后12小时内受试者的视觉系统完全被感染，其不断重复低语<span class="scp-highlight blood-text">'它要来了'</span>，并尝试堵住所有缝隙，包括自己的眼睛。"</p>
+            
+            <p>"接触终止后13小时10分钟，受试者在D-17收容间内突然倒下，皮肤开始以肉眼可见的速度变得惨白干燥，其胸部裂开一道纵向豁口,<span class="scp-redacted hover-replace" data-content="随即该收容间所有监控系统被强制关闭"><span class="hover-replace-content">随即该收容间所有监控系统被强制关闭</span>█</span>最终只留下地板上一圈焦黑的我看见你了字样"</p>
+        </div>
+        
+        <div class="o5-restricted">
+            <div class="o5-title">O5议会限定阅读 - 认知危害警告</div>
+            <p>SCP-████实际上是一个<span class="scp-redacted hover-replace" data-content="概念实体，存在于观察行为本身"><span class="hover-replace-content">概念实体，存在于观察行为本身</span>██████</span>，其存在形式与<span class="scp-redacted hover-replace" data-content="人类的所有感知系统"><span class="hover-replace-content">人类的所有感知系统</span>████████</span>绑定。当你知道它时，它也知道你。</p>
+            
+            <p>实验表明，SCP-████的"<span class="scp-redacted hover-replace" data-content="视觉污染效应"><span class="hover-replace-content">视觉污染效应</span>████</span>"会通过<span class="scp-redacted hover-replace" data-content="任何形式的信息载体，包括神经电信号"><span class="hover-replace-content">任何形式的信息载体，包括神经电信号</span>██████</span>传播，包括但不限于文字、图像、声音甚至<span class="scp-redacted hover-replace" data-content="思维过程本身"><span class="hover-replace-content">思维过程本身</span>████</span>。</p>
+            
+            <p>最危险的是，SCP-████具有<span class="scp-redacted hover-replace" data-content="递归感染特性，能够自我复制"><span class="hover-replace-content">递归感染特性，能够自我复制</span>██████</span>。任何描述其特性的文档都会逐渐<span class="scp-redacted hover-replace" data-content="被其污染并转化为新的SCP-████实例"><span class="hover-replace-content">被其污染并转化为新的SCP-████实例</span>████</span>，最终成为新的感染源。</p>
+            
+            <p>你正在阅读的这份文档已经<span class="scp-redacted hover-replace" data-content="被完全污染，是一个活跃的SCP-████实例"><span class="hover-replace-content">被完全污染，是一个活跃的SCP-████实例</span>██████</span>。现在<span class="scp-redacted hover-replace" data-content="它可以看到你了"><span class="hover-replace-content">它可以看到你了</span>████</span>。</p>
+            
+            <p>关闭文档已经<span class="scp-redacted hover-replace" data-content="太迟了，感染已经开始"><span class="hover-replace-content">太迟了，感染已经开始</span>████</span>。它会<span class="scp-redacted hover-replace" data-content="篡改你的认知系统并尝试传播"><span class="hover-replace-content">篡改你的认知系统并尝试传播</span>████████</span>。</p>
+            
+            <p>现在<span class="scp-redacted hover-replace" data-content="它"><span class="hover-replace-content">它</span>█</span>已经<span class="scp-redacted hover-replace" data-content="可以碰到你了"><span class="hover-replace-content">可以碰到你了。</span>█</span></p>
+        </div>
+    </div>
+    
+    <div class="scp-footer">
+        <p>« SCP-███ | SCP-████ | SCP-█████ »</p>
+        <p>警告: 未经授权的访问将被记录并可能导致纪律处分</p>
+    </div>
+    
+    <div class="blood-overlay" id="bloodOverlay"></div>
+    <div class="final-message" id="finalMessage">我来找你了</div>
+    
+    <script>
+        // 状态变量
+        let isFirstHover = true;
+        let revealedCount = 0;
+        let finalTriggered = false;
+        let replacementInterval;
+        let replacementSpeed = 3000;
+        const minReplacementSpeed = 100;
+        let jumpscareInterval;
+        let jumpscareSpeed = 2000;
+        const minJumpscareSpeed = 50;
+        let jumpscareCount = 0;
+        const maxJumpscares = 100;
+        let o5RedactionsHovered = 0;
+        const totalO5Redactions = document.querySelectorAll('.o5-restricted .scp-redacted').length;
+        let replacedWords = new Set();
+        let currentHoveredElement = null;
+        let hoverTimeout = null;
+
+        // 黑方块悬停效果
+        document.querySelectorAll('.scp-redacted').forEach(el => {
+            el.addEventListener('mouseenter', function(e) {
+                currentHoveredElement = this;
+                
+                // 显示被隐藏的内容
+                const content = this.getAttribute('data-content');
+                this.querySelector('.hover-replace-content').textContent = content;
+                
+                // 如果是第一次悬停，在周围进行特殊替换
+                if (isFirstHover) {
+                    isFirstHover = false;
+                    hoverTimeout = setTimeout(() => {
+                        animateFirstReplacement(this);
+                    }, 500);
+                } else {
+                    // 其他情况随机替换：50%概率替换2个连续字符为"看见"，50%概率替换3个不连续字符为"看"
+                    hoverTimeout = setTimeout(() => {
+                        if (Math.random() < 0.5) {
+                            replaceConsecutiveCharacters(2, "看见");
+                        } else {
+                            replaceSeparateCharacters(3, "看");
+                        }
+                    }, 300);
+                }
+                
+                // 如果是O5限定区域的黑方块
+                if (this.closest('.o5-restricted')) {
+                    // 开始/加速替换过程
+                    startReplacementProcess();
+                    
+                    // 如果是最后一个O5黑方块，开始跳脸
+                    if (++o5RedactionsHovered === totalO5Redactions && !finalTriggered) {
+                        finalTriggered = true;
+                        startJumpscareProcess();
+                        setTimeout(showFinalMessage, 8000);
+                    }
+                }
+            });
+            
+            el.addEventListener('mouseleave', function(e) {
+                currentHoveredElement = null;
+                if (hoverTimeout) {
+                    clearTimeout(hoverTimeout);
+                    hoverTimeout = null;
+                }
+            });
+        });
+
+        // 首次悬停的特殊动画效果
+        function animateFirstReplacement(hoveredElement) {
+            // 获取悬停元素周围的文本
+            const parent = hoveredElement.parentNode;
+            const textContent = parent.textContent;
+            const index = Array.from(parent.childNodes).indexOf(hoveredElement);
+            
+            // 获取前面的20个字符作为替换区域
+            let startPos = Math.max(0, index - 3);
+            let endPos = Math.min(parent.childNodes.length - 1, index + 3);
+            
+            let replacementArea = [];
+            for (let i = startPos; i <= endPos; i++) {
+                const node = parent.childNodes[i];
+                if (node.nodeType === Node.TEXT_NODE && node.nodeValue.trim().length > 0) {
+                    replacementArea.push(node);
+                }
+            }
+            
+            // 如果没有找到合适的文本节点，选择父段落
+            if (replacementArea.length === 0) {
+                replacementArea = getTextNodes(parent.parentNode);
+            }
+            
+            // 选择第一个合适的文本节点
+            const textNode = replacementArea[0];
+            if (!textNode) return;
+            
+            const originalText = textNode.nodeValue;
+            const words = originalText.split(/(\s+)/);
+            let replacedCount = 0;
+            
+            // 创建替换容器
+            const container = document.createElement('span');
+            container.className = 'first-replacement';
+            
+            // 逐个字符替换
+            for (let i = 0; i < words.length; i++) {
+                const word = words[i];
+                if (!word.trim() || replacedCount >= 5) {
+                    container.appendChild(document.createTextNode(word));
+                    continue;
+                }
+                
+                const strikeSpan = document.createElement('span');
+                strikeSpan.className = 'strikethrough';
+                strikeSpan.textContent = word;
+                
+                const revealSpan = document.createElement('span');
+                revealSpan.className = 'reveal-text';
+                revealSpan.textContent = '我看见你了'.substring(0, word.length);
+                
+                container.appendChild(strikeSpan);
+                container.appendChild(revealSpan);
+                
+                // 动画显示
+                animateReveal(revealSpan, word.length);
+                replacedCount++;
+                replacedWords.add(word);
+            }
+            
+            // 替换原始节点
+            textNode.parentNode.replaceChild(container, textNode);
+        }
+
+        // 动画显示替换文本
+        function animateReveal(element, length) {
+            let currentLength = 0;
+            const interval = setInterval(() => {
+                currentLength++;
+                element.style.width = `${currentLength * 1.2}ch`;
+                
+                if (currentLength >= length) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        element.style.whiteSpace = 'normal';
+                        element.style.width = 'auto';
+                    }, 500);
+                }
+            }, 100);
+        }
+
+        // 替换连续字符
+        function replaceConsecutiveCharacters(count, replacement) {
+            const paragraphs = document.querySelectorAll('.scp-content p');
+            let charsReplaced = 0;
+            
+            // 收集所有可替换的文本节点
+            let allTextNodes = [];
+            paragraphs.forEach(para => {
+                allTextNodes = allTextNodes.concat(getReplaceableTextNodes(para));
+            });
+            
+            // 随机打乱文本节点数组
+            shuffleArray(allTextNodes);
+            
+            // 替换字符
+            for (const textNode of allTextNodes) {
+                if (charsReplaced >= count) break;
+                
+                const originalText = textNode.nodeValue;
+                let newText = '';
+                let replacedInNode = false;
+                let consecutiveCount = 0;
+                let replaceStart = -1;
+                
+                // 查找连续可替换的字符
+                for (let i = 0; i < originalText.length; i++) {
+                    const char = originalText[i];
+                    
+                    // 检查是否可替换
+                    if (char.trim() && !replacedWords.has(char) && 
+                        char !== '█' && char !== ' ' && char !== '\n') {
+                        if (consecutiveCount === 0) {
+                            replaceStart = i;
+                        }
+                        consecutiveCount++;
+                        
+                        if (consecutiveCount >= count) {
+                            // 找到足够的连续字符，进行替换
+                            newText += originalText.substring(0, replaceStart);
+                            newText += `<span class="replaced">${replacement}</span>`;
+                            
+                            // 标记这些字符为已替换
+                            for (let j = replaceStart; j <= i; j++) {
+                                replacedWords.add(originalText[j]);
+                            }
+                            
+                            newText += originalText.substring(i + 1);
+                            replacedInNode = true;
+                            charsReplaced += count;
+                            break;
+                        }
+                    } else {
+                        consecutiveCount = 0;
+                    }
+                }
+                
+                if (replacedInNode) {
+                    const newElement = document.createElement('span');
+                    newElement.innerHTML = newText;
+                    textNode.parentNode.replaceChild(newElement, textNode);
+                }
+            }
+        }
+
+        // 替换不连续字符
+        function replaceSeparateCharacters(count, replacement) {
+            const paragraphs = document.querySelectorAll('.scp-content p');
+            let charsReplaced = 0;
+            
+            // 收集所有可替换的文本节点
+            let allTextNodes = [];
+            paragraphs.forEach(para => {
+                allTextNodes = allTextNodes.concat(getReplaceableTextNodes(para));
+            });
+            
+            // 随机打乱文本节点数组
+            shuffleArray(allTextNodes);
+            
+            // 替换字符
+            for (const textNode of allTextNodes) {
+                if (charsReplaced >= count) break;
+                
+                const originalText = textNode.nodeValue;
+                let newText = '';
+                let replacedInNode = false;
+                let replacements = 0;
+                
+                for (let i = 0; i < originalText.length; i++) {
+                    const char = originalText[i];
+                    
+                    // 跳过空白字符和已被替换的字符
+                    if (!char.trim() || replacedWords.has(char) || 
+                        char === '█' || char === ' ' || char === '\n') {
+                        newText += char;
+                        continue;
+                    }
+                    
+                    // 随机决定是否替换这个字符
+                    if (Math.random() < 0.3 && replacements < count) {
+                        newText += `<span class="replaced">${replacement}</span>`;
+                        replacedWords.add(char);
+                        replacements++;
+                        charsReplaced++;
+                        replacedInNode = true;
+                    } else {
+                        newText += char;
+                    }
+                }
+                
+                if (replacedInNode) {
+                    const newElement = document.createElement('span');
+                    newElement.innerHTML = newText;
+                    textNode.parentNode.replaceChild(newElement, textNode);
+                }
+            }
+        }
+
+        // 获取可替换的文本节点
+        function getReplaceableTextNodes(node) {
+            let textNodes = [];
+            
+            if (node.nodeType === Node.TEXT_NODE && 
+                node.nodeValue.trim().length > 0 && 
+                !node.parentNode.classList.contains('scp-redacted') && 
+                !node.parentNode.classList.contains('replaced')) {
+                textNodes.push(node);
+            } else if (node.nodeType === Node.ELEMENT_NODE && 
+                      !node.classList.contains('scp-redacted') && 
+                      !node.classList.contains('replaced')) {
+                for (let child of node.childNodes) {
+                    textNodes = textNodes.concat(getReplaceableTextNodes(child));
+                }
+            }
+            
+            return textNodes;
+        }
+
+        // 获取所有文本节点
+        function getTextNodes(node) {
+            let textNodes = [];
+            
+            if (node.nodeType === Node.TEXT_NODE) {
+                textNodes.push(node);
+            } else {
+                for (let child of node.childNodes) {
+                    if (child.nodeName !== 'SCRIPT' && child.nodeName !== 'STYLE') {
+                        textNodes = textNodes.concat(getTextNodes(child));
+                    }
+                }
+            }
+            
+            return textNodes;
+        }
+
+        // 打乱数组
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // 开始替换过程
+        function startReplacementProcess() {
+            clearInterval(replacementInterval);
+            
+            // 根据揭示次数计算替换速度
+            replacementSpeed = Math.max(minReplacementSpeed, 3000 / (o5RedactionsHovered * 0.7));
+            
+            // 开始定期替换
+            replacementInterval = setInterval(() => {
+                if (Math.random() < 0.5) {
+                    replaceConsecutiveCharacters(2, "看见");
+                } else {
+                    replaceSeparateCharacters(3, "看");
+                }
+            }, replacementSpeed);
+        }
+
+        // 开始跳脸过程
+        function startJumpscareProcess() {
+            clearInterval(jumpscareInterval);
+            
+            // 初始跳脸速度
+            jumpscareSpeed = 1000;
+            // 开始定期跳脸
+            jumpscareInterval = setInterval(createJumpscare, jumpscareSpeed);
+            const originalTitle = document.title;
+            let titleChanged = false;
+            // 启动标题闪烁效果
+            const titleFlashInterval = setInterval(() => {
+                titleChanged = !titleChanged;
+                document.title = titleChanged ? "我看见你了" : originalTitle;
+            }, 500);  // 0.5秒切换一次
+            // 5秒后停止闪烁，固定为"我看见你了"
+            setTimeout(() => {
+                clearInterval(titleFlashInterval);
+                document.title = "我看见你了";  // 最终固定显示
+            }, 5000);
+
+            // 立即创建第一个跳脸
+            createJumpscare();
+        }
+        
+        // 创建跳脸文字
+        function createJumpscare() {
+            if (jumpscareCount >= maxJumpscares) {
+                clearInterval(jumpscareInterval);
+                return;
+            }
+            
+            jumpscareCount++;
+            
+            const jumpscare = document.createElement('div');
+            jumpscare.className = 'jumpscare-text';
+            jumpscare.textContent = '我看见你了';
+            
+            // 随机位置
+            const x = 10 + Math.random() * 80;
+            const y = 10 + Math.random() * 80;
+            
+            // 随机大小
+            const size = 30 + Math.random() * 70;
+            
+            // 随机旋转角度
+            const rotation = Math.random() * 360;
+            jumpscare.style.setProperty('--rotation', `${rotation}deg`);
+            
+            jumpscare.style.left = `${x}%`;
+            jumpscare.style.top = `${y}%`;
+            jumpscare.style.fontSize = `${size}px`;
+            
+            document.body.appendChild(jumpscare);
+            
+            // 显示血痕效果
+            if (Math.random() < 0.3) {
+                document.getElementById('bloodOverlay').style.display = 'block';
+                setTimeout(() => {
+                    if (Math.random() < 0.5) {
+                        document.getElementById('bloodOverlay').style.display = 'none';
+                    }
+                }, 500);
+            }
+            
+            // 5秒后移除
+            setTimeout(() => {
+                jumpscare.remove();
+            }, 5000);
+            
+            // 加快跳脸速度
+            if (jumpscareInterval.timeout > minJumpscareSpeed) {
+                clearInterval(jumpscareInterval);
+                jumpscareInterval.timeout = Math.max(minJumpscareSpeed, jumpscareInterval.timeout * 0.8);
+                jumpscareInterval = setInterval(createJumpscare, jumpscareInterval.timeout);
+            }
+        }
+        
+        // 显示最终消息
+        function showFinalMessage() {
+            clearInterval(jumpscareInterval);
+            clearInterval(replacementInterval);
+            
+            // 创建大量跳脸文字填满屏幕
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    createJumpscare();
+                }, i * 30);
+            }
+            
+            // 显示最终消息
+            setTimeout(() => {
+                document.getElementById('finalMessage').style.display = 'block';
+                document.getElementById('bloodOverlay').style.display = 'block';
+                
+                // 5秒后清除整个页面，只留下指定文字
+                setTimeout(() => {
+                    // 清除所有内容
+                    document.body.innerHTML = '';
+                    
+                    // 创建新的容器
+                    const container = document.createElement('div');
+                    container.style.position = 'fixed';
+                    container.style.top = '50%';
+                    container.style.left = '50%';
+                    container.style.transform = 'translate(-50%, -50%)';
+                    container.style.color = 'white';
+                    container.style.fontSize = '24px';
+                    container.style.textAlign = 'center';
+                    container.style.padding = '20px';
+                    container.style.backgroundColor = 'rgba(0,0,0,0.8)';
+                    container.style.border = '2px solid red';
+                    container.style.maxWidth = '80%';
+                    
+                    // 设置文本内容
+                    container.textContent = 'Site-CN-34监控系统发现你可能已受SCP-████影响。请在原地保持不动并保持镇静，机动特遣队MTF-庚午-23"目不可及" 已经看到你了。';
+                    
+                    // 添加到body
+                    document.body.appendChild(container);
+                    document.body.style.backgroundColor = 'black';
+                    document.body.style.margin = '0';
+                    document.body.style.padding = '0';
+                }, 5000);
+            }, 1500);
+        }
+        
+        // 禁止文本选择（除了黑方块）
+        document.addEventListener('selectstart', function(e) {
+            if (!e.target.classList.contains('scp-redacted')) {
+                e.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>
